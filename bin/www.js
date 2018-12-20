@@ -1,22 +1,23 @@
 /**
  * 启动web服务，运行示例
  */
-const Html2docx = require('../index');
+'use strict';
+const Html2docx = require('../index').Html2docx;
+const debug = require('debug')('docx:bin:www');
+const express = require('express');
+const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
-const express = require('express');
 const app = express();
 let storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/')
+        cb(null, path.join(__dirname, './uploads/'))
     },
     filename: function (req, file, cb) {
-        console.log('file',file)
-        cb(null, Date.now() +'-' + file.originalname)
+        cb(null, Date.now() + '-' + file.originalname)
     }
 });
-let upload = multer({ storage: storage });
+let upload = multer({storage: storage});
 
 /**
  * 首页
@@ -29,12 +30,34 @@ app.get('/', (req, res) => {
  * 上传html
  */
 app.post('/', upload.single('file'), (req, res) => {
-    console.log(req.file)
-    console.log(req.body)
+    debug('file:', req.file)
+    debug('body:', req.body)
+    if(req.file.mimetype !== 'text/html'){
+        return res.json({code: 4, msg: '请上传html文件'});
+    }
     let filePath = req.file.path;
     let template = req.body.template;
-    res.send('ok')
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        let destPath = path.dirname(filePath);
+        let templateFile = path.resolve(__dirname, '../test/template', template + '.docx');
+
+        let html2docx = new Html2docx({
+            evenAndOddHeaders: false,                // 区分奇偶页，默认false，不区分
+            content: data,                           // html内容，字符串
+            destPath: destPath,                      // 生成的word输出路径
+            templateFile: templateFile,              // word模板文件,
+            filename: req.file.originalname,         // 默认文件名
+        });
+
+        html2docx.parse().then(() => {
+            res.json({code: 0, msg: 'ok', data: destPath + path.sep + req.file.originalname + '.docx'});
+        }).catch((e) => {
+            res.send(e)
+        });
+
+    });
 });
+
 
 const port = 9000;
 app.listen(port, () => {

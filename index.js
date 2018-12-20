@@ -1,5 +1,5 @@
-const html2docx = require('./lib/html2docx');
+const Html2docx = require('./lib/html2docx');
 
 module.exports={
-    html2docx: html2docx
+    Html2docx: Html2docx
 };
