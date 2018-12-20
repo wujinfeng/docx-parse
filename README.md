@@ -4,7 +4,7 @@ The HTML generate word.docx
 ## 安装
 
 ```
-npm install --save @wujinfeng/docx-parse
+npm install https://github.com/wujinfeng/docx-parse.git
 ```
 
 ## 使用方法
