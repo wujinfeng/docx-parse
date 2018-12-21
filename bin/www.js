@@ -43,13 +43,12 @@ app.post('/', upload.single('file'), (req, res) => {
 
         let html2docx = new Html2docx({
             evenAndOddHeaders: false,                // 区分奇偶页，默认false，不区分
-            content: data,                           // html内容，字符串
             destPath: destPath,                      // 生成的word输出路径
             templateFile: templateFile,              // word模板文件,
             filename: req.file.originalname,         // 默认文件名
         });
 
-        html2docx.parse().then(() => {
+        html2docx.parse(data).then(() => {
             res.json({code: 0, msg: 'ok', data: destPath + path.sep + req.file.originalname + '.docx'});
         }).catch((e) => {
             res.send(e)
