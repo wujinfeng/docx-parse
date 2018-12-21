@@ -26,3 +26,20 @@ html2docx.parse(); // promise对象，执行成功返回true
 ```
 
 需要安装 pandoc 2.5版本.
+
+## 测试
+
+使用mocha，assert. 运行测试
+ ``` npm run test ```
+
+test/template目录下是测试用的word模板文件
+test/data/docx 生成的word文件
+test/data/input 测试用到的html
+
+## 查看示例
+
+启动服务
+ ``` npm run dev ```
+ 会运行 bin/wwww.js
+
+在bin目录下web服务。
