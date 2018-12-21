@@ -2,9 +2,12 @@
 
 ## 简介
 
+
 The HTML 生成 word.docx
 
+
 ## 安装
+
 
 ```
 npm install http://git.iyunxiao.com/wujinfeng/docx-parse.git
@@ -33,21 +36,29 @@ html2docx.parse(content);
 
 ## 测试
 
+
 使用mocha，assert. 运行测试
  ``` npm run test ```
 
 test/template目录下是测试用的word模板文件
+
 test/data/docx 生成的word文件
+
 test/data/input 测试用到的html
 
 ## 查看示例
 
+
 启动服务
+
  ``` npm run dev ```
+
  会运行 bin/wwww.js
 
 在bin目录下web服务。
 
 ## 问题反馈
 
-使用过程中遇到到问题，请提交上来。或者你自己也可以修改代码，修复bug，添加功能，大家一起完善功能。
+使用过程中遇到到问题，请提交上来。
+
+或者你自己也可以修改代码，修复bug，添加功能，大家一起完善功能。
