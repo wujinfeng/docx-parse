@@ -57,7 +57,7 @@ test/data/input 测试用到的html
   npm run dev
  ```
 
-会运行 bin/wwww.js
+会运行 bin/www.js
 
 启动在bin目录下web服务。
 
