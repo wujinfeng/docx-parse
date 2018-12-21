@@ -1,5 +1,8 @@
 # docx-parse
-The HTML generate word.docx
+
+## 简介
+
+The HTML 生成 word.docx
 
 ## 安装
 
@@ -43,3 +46,7 @@ test/data/input 测试用到的html
  会运行 bin/wwww.js
 
 在bin目录下web服务。
+
+## 问题反馈
+
+使用过程中遇到到问题，请提交上来。或者你自己也可以修改代码，修复bug，添加功能，大家一起完善功能。
