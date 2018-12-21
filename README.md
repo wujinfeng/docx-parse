@@ -38,7 +38,9 @@ html2docx.parse(content);
 
 
 使用mocha，assert. 运行测试
- ``` npm run test ```
+ ```
+ npm run test
+ ```
 
 test/template目录下是测试用的word模板文件
 
@@ -51,11 +53,14 @@ test/data/input 测试用到的html
 
 启动服务
 
- ``` npm run dev ```
+ ```
+  npm run dev
+ ```
 
- 会运行 bin/wwww.js
+会运行 bin/wwww.js
 
-在bin目录下web服务。
+启动在bin目录下web服务。
+
 
 ## 问题反馈
 
