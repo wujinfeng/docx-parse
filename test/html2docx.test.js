@@ -4,8 +4,8 @@ const path = require('path');
 
 
 describe('class:Html2docxTest', function () {
-    describe('math:parse', function () {
-        it('should ok', async function () {
+    describe('method:parse', function () {
+        it('should true', async function () {
             let config = {
                 destPath: path.resolve(__dirname, './data/docx/'),
                 templateFile: path.resolve(__dirname, './template', 'A4_template.docx'),
