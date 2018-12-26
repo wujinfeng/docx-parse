@@ -37,15 +37,19 @@ app.post('/', upload.single('file'), (req, res) => {
     }
     let filePath = req.file.path;
     let template = req.body.template;
+    let pandoc = req.body.pandoc;
+    let evenAndOddHeaders = Number(req.body.evenAndOddHeaders) === 1;
+    debug('req.body', req.body);
     fs.readFile(filePath, 'utf8', (err, data) => {
         let destPath = path.dirname(filePath);
         let templateFile = path.resolve(__dirname, '../test/template', template + '.docx');
 
         let html2docx = new Html2docx({
-            evenAndOddHeaders: false,                // 区分奇偶页，默认false，不区分
+            evenAndOddHeaders: evenAndOddHeaders,                // 区分奇偶页，默认false，不区分
             destPath: destPath,                      // 生成的word输出路径
             templateFile: templateFile,              // word模板文件,
             filename: req.file.originalname,         // 默认文件名
+            pandocVersion: pandoc,                   // pandoc 版本
         });
 
         html2docx.parse(data).then(() => {

@@ -1,5 +1,5 @@
-let Html2word = require('./lib/html2word');
+let Html2docx = require('./lib/html2docx');
 
 module.exports = {
-    Html2word: Html2word
+    Html2docx: Html2docx
 };

@@ -6,19 +6,40 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title></title>
+    <style>
+        .submit{width:80px;display: block;font-size:18px;}
+        .beizhu{margin-top:20px; font-size:14px;color: #333;}
+    </style>
 </head>
 <body>
 <h2>使用示例</h2>
 <p>上传html文件，转成word.docx.</p>
 <form action="/" method="post" enctype="multipart/form-data">
+    <p>pandoc版本：<select name="pandoc">
+        <option value="1.19">1.19</option>
+        <option value="2.5">2.5</option>
+    </select>
+    </p>
+    <p>区分奇偶页：<select name="evenAndOddHeaders">
+        <option value=1>是</option>
+        <option value=0>否</option>
+    </select>
+    </p>
     <p>选择模板：<select name="template">
         <option value="A4_template">A4</option>
         <option value="B4_double">B4双栏</option>
         <option value="A3_double">A3双栏</option>
     </select>
     </p>
-    <p>上传html文件：<input type="file" name="file"/></p>
-    <input type="submit" value="提交"/>
+    <p>上传html文件：<input required type="file" name="file"/></p>
+    <input type="submit" class="submit" value="提交"/>
 </form>
+<div class="beizhu">
+<p>备注：</p>
+<p>上传文件保存在 bin/uploads/</p>
+<p>生成的word文档在 bin/uploads/</p>
+<p>模板文件在 test/template/</p>
+<p>更多内容请查看文件 README.md</p>
+</div>
 </body>
 </html>
