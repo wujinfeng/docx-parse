@@ -297,6 +297,25 @@ let setTableStyle = function (dom) {
     }
 };
 
+/**
+ * 设置下划线
+ * 标签：this_is_tag_underline
+ * @param dom
+ */
+let setUnderline = function(dom){
+    let tDomArr = dom.documentElement.getElementsByTagName('w:t');
+    for(let i=0, n=tDomArr.length; i<n; i++){
+        let t = tDomArr.item(i);
+        if (t.firstChild.nodeValue.indexOf('this_is_tag_underline') > -1) {
+            t.firstChild.textContent = t.firstChild.nodeValue.replace(/this_is_tag_underline/, '');
+            let rPr = dom.createElement('w:rPr');
+            let underline = createDomAndAttr(dom, 'w:u', {'w:val': 'single'});
+            rPr.appendChild(underline);
+            t.parentNode.insertBefore(rPr, t);
+        }
+    }
+};
+
 let postProcess = async function (zip, stemsTableWidth = []) {
     let xmlStr = await zip.file('word/document.xml').async('string');
     let dom = new DOMParser().parseFromString(xmlStr, 'text/xml');
@@ -305,7 +324,7 @@ let postProcess = async function (zip, stemsTableWidth = []) {
     setPage(dom);
     setExtent(dom);
     setTblStyleTblW(dom);
-
+    setUnderline(dom);
     setTableStyle(dom, stemsTableWidth);
 
     xmlStr = new XMLSerializer().serializeToString(dom);

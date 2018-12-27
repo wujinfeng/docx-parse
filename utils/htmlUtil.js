@@ -81,6 +81,20 @@ let _parseTableInHtml = function (stemsTableWidth, window) {
 };
 
 /**
+ * u 标签识别，首位置添加内容 this_is_tag_underline
+ * pandoc生成word后，识别这个标志，替换
+ * @param window
+ */
+let uTagAddIdentify = function (window) {
+    let uArr = window.$('u');
+    _.each(uArr, function (u) {
+        let $span = window.$(window.document.createElement('span'));
+        $span.html('this_is_tag_underline' + u.innerHTML);
+        $span.insertBefore(window.$(u));
+        window.$(u).remove();
+    });
+};
+/**
  * 预先处理html，table
  * @param content
  */
@@ -90,7 +104,7 @@ let preProcessAsemble = async function (content) {
         const path_ = path.resolve(__dirname, '../node_modules/jquery/dist/jquery.min.js');
         const html_ = '<body id="master">' + content + '</body>';
         jsdom.env(html_, [path_], function (err, window) {
-            if(err){
+            if (err) {
                 return reject(err);
             }
             let stemsTableWidth = [];
@@ -172,6 +186,8 @@ let preProcessAsemble = async function (content) {
                 window.$(str).insertBefore(window.$(math));
                 window.$(math).remove();
             });
+
+            uTagAddIdentify(window); // u 标签设置唯一标志
 
             let html = window.$('#master').html();
             //debug('html: ', html);

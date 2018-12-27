@@ -39,7 +39,7 @@ app.post('/', upload.single('file'), (req, res) => {
     let template = req.body.template;
     let pandoc = req.body.pandoc;
     let evenAndOddHeaders = Number(req.body.evenAndOddHeaders) === 1;
-    debug('req.body', req.body);
+
     fs.readFile(filePath, 'utf8', (err, data) => {
         let destPath = path.dirname(filePath);
         let templateFile = path.resolve(__dirname, '../test/template', template + '.docx');

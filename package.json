@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "DEBUG=docx* nodemon bin/www.js",
-    "test": "DEBUG=docx* mocha"
+    "test": "DEBUG=docx* mocha --timeout 30000 "
   },
   "repository": {
     "type": "git",
