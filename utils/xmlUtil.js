@@ -47,29 +47,33 @@ let saveDocument = function (zip, outFile) {
  * @returns {Promise<void>}
  */
 let setTableBorder = async function (zip) {
-    let xmlstr = await zip.file('word/document.xml').async('string');
-    let dom = new DOMParser().parseFromString(xmlstr, 'text/xml');
-    let nodeList = dom.documentElement.getElementsByTagName('w:tblPr'); // 获取table元素
-    // 创建border边框里到元素及元素属性
-    let borderChild = ['w:top', 'w:left', 'w:bottom', 'w:right', 'w:insideH', 'w:insideV'];
-    let getBorderChild = function (tagName) {
-        return createDomAndAttr(dom, tagName, {'w:val': 'single', 'w:sz': '4', 'w:space': '0', 'w:color': '666666'})
-    };
-    // 创建table的 border边框元素
-    let borderEle = function () {
-        let ele = dom.createElement('w:tblBorders');
-        for (let i = 0, n = borderChild.length; i < n; i++) {
-            ele.appendChild(getBorderChild(borderChild[i]))
+    try {
+        let xmlstr = await zip.file('word/document.xml').async('string');
+        let dom = new DOMParser().parseFromString(xmlstr, 'text/xml');
+        let nodeList = dom.documentElement.getElementsByTagName('w:tblPr'); // 获取table元素
+        // 创建border边框里到元素及元素属性
+        let borderChild = ['w:top', 'w:left', 'w:bottom', 'w:right', 'w:insideH', 'w:insideV'];
+        let getBorderChild = function (tagName) {
+            return createDomAndAttr(dom, tagName, {'w:val': 'single', 'w:sz': '4', 'w:space': '0', 'w:color': '666666'})
+        };
+        // 创建table的 border边框元素
+        let borderEle = function () {
+            let ele = dom.createElement('w:tblBorders');
+            for (let i = 0, n = borderChild.length; i < n; i++) {
+                ele.appendChild(getBorderChild(borderChild[i]))
+            }
+            return ele;
+        };
+        // border边框元素加入到table， 元素每次都要生成，用函数
+        for (let i = 0, n = nodeList.length; i < n; i++) {
+            nodeList.item(i).appendChild(borderEle());
         }
-        return ele;
-    };
-    // border边框元素加入到table， 元素每次都要生成，用函数
-    for (let i = 0; i < nodeList.length; i++) {
-        nodeList.item(i).appendChild(borderEle());
+        let newXmlStr = new XMLSerializer().serializeToString(dom); // 转成字符串
+        // debug('newXmlStr:', newXmlStr)
+        await zip.file('word/document.xml', newXmlStr); // 写回到文件
+    } catch (e) {
+        throw e;
     }
-    let newXmlStr = new XMLSerializer().serializeToString(dom); // 转成字符串
-    // debug('newXmlStr:', newXmlStr)
-    await zip.file('word/document.xml', newXmlStr); // 写回到文件
 };
 
 /**
@@ -78,32 +82,30 @@ let setTableBorder = async function (zip) {
  * @returns {Promise<boolean>}
  */
 let setEvenAndOddHeaders = async function (zip, evenAndOddHeaders) {
-    let xmlstr = await zip.file('word/settings.xml').async('string');
-    //debug('xmlstr: ', xmlstr)
-    let dom = new DOMParser().parseFromString(xmlstr, 'text/xml');
-    let nodeList = dom.documentElement.getElementsByTagName('w:evenAndOddHeaders');
-    let mirrorMargins = dom.documentElement.getElementsByTagName('w:mirrorMargins');
-    let find = nodeList.length > 0; // 奇偶页头元素是否存在
-    if (evenAndOddHeaders) {
-        if (!find) { // 添加
+    try {
+        let xmlstr = await zip.file('word/settings.xml').async('string');
+        //debug('xmlstr: ', xmlstr)
+        let dom = new DOMParser().parseFromString(xmlstr, 'text/xml');
+        let nodeList = dom.documentElement.getElementsByTagName('w:evenAndOddHeaders');
+        let mirrorMargins = dom.documentElement.getElementsByTagName('w:mirrorMargins');
+        for (let i = 0, n = nodeList.length; i < n; i++) {
+            dom.documentElement.removeChild(nodeList.item(i))
+        }
+        for (let i = 0, n = mirrorMargins.length; i < n; i++) {
+            dom.documentElement.removeChild(mirrorMargins.item(i))
+        }
+        if (evenAndOddHeaders) {
             let mirrorMargins = dom.createElement('w:mirrorMargins');
             let evenAndOddHeaders = dom.createElement('w:evenAndOddHeaders');
             dom.documentElement.appendChild(mirrorMargins);
             dom.documentElement.appendChild(evenAndOddHeaders);
         }
-    } else {
-        if (find) { // 删除
-            for (let i = 0; i < nodeList.length; i++) {
-                dom.documentElement.removeChild(nodeList.item(i))
-            }
-            for (let i = 0; i < mirrorMargins.length; i++) {
-                dom.documentElement.removeChild(mirrorMargins.item(i))
-            }
-        }
+        let newXmlStr = new XMLSerializer().serializeToString(dom);
+        //debug('newXmlStr:', newXmlStr)
+        await zip.file('word/settings.xml', newXmlStr); // 写回到文件里 settings.xml
+    } catch (e) {
+        throw e;
     }
-    let newXmlStr = new XMLSerializer().serializeToString(dom);
-    //debug('newXmlStr:', newXmlStr)
-    await zip.file('word/settings.xml', newXmlStr); // 写回到文件里 settings.xml
 };
 
 let _handleTableInDoc = function (stemsTableWidth, xmlStr) {
@@ -221,59 +223,62 @@ let setTblGrid = function (dom, tableDom) {
  * @param tableDom
  */
 let setSpan = function (dom, tableDom, stemsTableWidth) {
-    let tcDomArr = tableDom.getElementsByTagName('w:tc');
-    let deleteTcArr = [];
-    for (let i = 0, n = tcDomArr.length; i < n; i++) {
-        let tc = tcDomArr.item(i);
-        let tArr = tc.getElementsByTagName('w:t');
-        for (let j = 0, k = tArr.length; j < k; j++) {
-            let t = tArr.item(j);
-            if (t.firstChild.nodeValue.indexOf('this_is_a_tag_for_span') > -1) {
-                let prevTc = tc.previousSibling;
-                let tcPr = prevTc.getElementsByTagName('w:tcPr');
-                if (tcPr.length > 0) {
-                    let gridSpan = tcPr.item(0).getElementsByTagName('w:gridSpan');
-                    if (gridSpan.length > 0) {
-                        let num = Number(gridSpan.item(0).getAttribute('w:val')) + 1;
-                        gridSpan.item(0).setAttribute('w:val', num.toString())
+    try {
+        let tcDomArr = tableDom.getElementsByTagName('w:tc');
+        let deleteTcArr = [];
+        for (let i = 0, n = tcDomArr.length; i < n; i++) {
+            let tc = tcDomArr.item(i);
+            let tArr = tc.getElementsByTagName('w:t');
+            for (let j = 0, k = tArr.length; j < k; j++) {
+                let t = tArr.item(j);
+                if (t.firstChild.nodeValue.indexOf('this_is_a_tag_for_span') > -1) {
+                    let prevTc = tc.previousSibling;
+                    let tcPr = prevTc.getElementsByTagName('w:tcPr');
+                    if (tcPr.length > 0) {
+                        let gridSpan = tcPr.item(0).getElementsByTagName('w:gridSpan');
+                        if (gridSpan.length > 0) {
+                            let num = Number(gridSpan.item(0).getAttribute('w:val')) + 1;
+                            gridSpan.item(0).setAttribute('w:val', num.toString())
+                        } else {
+                            let newGridSpan = createDomAndAttr(dom, 'w:gridSpan', {'w:val': '2'});
+                            tcPr.item(0).appendChild(newGridSpan)
+                        }
                     } else {
+                        let newTcPr = createDomAndAttr(dom, 'w:tcPr');
                         let newGridSpan = createDomAndAttr(dom, 'w:gridSpan', {'w:val': '2'});
-                        tcPr.item(0).appendChild(newGridSpan)
+                        newTcPr.appendChild(newGridSpan);
+                        if (prevTc.hasChildNodes()) {
+                            prevTc.insertBefore(newTcPr, prevTc.firstChild)
+                        } else {
+                            prevTc.appendChild(newTcPr)
+                        }
                     }
-                } else {
-                    let newTcPr = createDomAndAttr(dom, 'w:tcPr');
-                    let newGridSpan = createDomAndAttr(dom, 'w:gridSpan', {'w:val': '2'});
-                    newTcPr.appendChild(newGridSpan);
-                    if (prevTc.hasChildNodes()) {
-                        prevTc.insertBefore(newTcPr, prevTc.firstChild)
-                    } else {
-                        prevTc.appendChild(newTcPr)
-                    }
+                    deleteTcArr.push(tc);
+                    break;
+                } else if (t.firstChild.nodeValue.indexOf('this_is_a_tag_for_row_span_begin') > -1) {
+                    t.firstChild.textContent = t.firstChild.nodeValue.replace(/this_is_a_tag_for_row_span_begin/, '');
+                    let tcPr = dom.createElement('w:tcPr');
+                    let vMerge = createDomAndAttr(dom, 'w:vMerge', {'w:val': 'restart'});
+                    tcPr.appendChild(vMerge);
+                    tc.insertBefore(tcPr, tc.firstChild);
+                    break;
+                } else if (t.firstChild.nodeValue.indexOf('this_is_a_tag_for_row_span') > -1) {
+                    t.firstChild.textContent = t.firstChild.nodeValue.replace(/this_is_a_tag_for_row_span/, '');
+                    let tcPr = dom.createElement('w:tcPr');
+                    let vMerge = createDomAndAttr(dom, 'w:vMerge', {'w:val': 'continue'});
+                    tcPr.appendChild(vMerge);
+                    tc.insertBefore(tcPr, tc.firstChild);
+                    break;
                 }
-                deleteTcArr.push(tc);
-                break;
-            } else if (t.firstChild.nodeValue.indexOf('this_is_a_tag_for_row_span_begin') > -1) {
-                t.firstChild.textContent = t.firstChild.nodeValue.replace(/this_is_a_tag_for_row_span_begin/, '');
-                let tcPr = dom.createElement('w:tcPr');
-                let vMerge = createDomAndAttr(dom, 'w:vMerge', {'w:val': 'restart'});
-                tcPr.appendChild(vMerge);
-                tc.insertBefore(tcPr, tc.firstChild);
-                break;
-            } else if (t.firstChild.nodeValue.indexOf('this_is_a_tag_for_row_span') > -1) {
-                t.firstChild.textContent = t.firstChild.nodeValue.replace(/this_is_a_tag_for_row_span/, '');
-                let tcPr = dom.createElement('w:tcPr');
-                let vMerge = createDomAndAttr(dom, 'w:vMerge', {'w:val': 'continue'});
-                tcPr.appendChild(vMerge);
-                tc.insertBefore(tcPr, tc.firstChild);
-                break;
             }
         }
+        for (let i = 0, n = deleteTcArr.length; i < n; i++) { // 跨列的元素需要删除 单元格 tc
+            let tc = deleteTcArr[i];
+            tc.parentNode.removeChild(tc);
+        }
+    } catch (e) {
+        throw e;
     }
-    for (let i = 0, n = deleteTcArr.length; i < n; i++) { // 跨列的元素需要删除 单元格 tc
-        let tc = deleteTcArr[i];
-        tc.parentNode.removeChild(tc);
-    }
-
 };
 
 /**
@@ -287,6 +292,7 @@ let setTableStyle = function (dom) {
         if (t.firstChild.nodeValue === 'this_is_a_tag_for_table') {
             let p = t.parentNode.parentNode;
             let tableDom = p.nextSibling;
+            console.log('tagName: ', tableDom.tagName);
             if (tableDom.tagName === 'w:tbl') { // 找到表格标签
                 setTblPr(dom, tableDom);
                 setTblGrid(dom, tableDom);
@@ -302,9 +308,9 @@ let setTableStyle = function (dom) {
  * 标签：this_is_tag_underline
  * @param dom
  */
-let setUnderline = function(dom){
+let setUnderline = function (dom) {
     let tDomArr = dom.documentElement.getElementsByTagName('w:t');
-    for(let i=0, n=tDomArr.length; i<n; i++){
+    for (let i = 0, n = tDomArr.length; i < n; i++) {
         let t = tDomArr.item(i);
         if (t.firstChild.nodeValue.indexOf('this_is_tag_underline') > -1) {
             t.firstChild.textContent = t.firstChild.nodeValue.replace(/this_is_tag_underline/, '');
@@ -317,23 +323,27 @@ let setUnderline = function(dom){
 };
 
 let postProcess = async function (zip, stemsTableWidth = []) {
-    let xmlStr = await zip.file('word/document.xml').async('string');
-    let dom = new DOMParser().parseFromString(xmlStr, 'text/xml');
-    deleteTblW(dom);
-    addPPrCenter(dom);
-    setPage(dom);
-    setExtent(dom);
-    setTblStyleTblW(dom);
-    setUnderline(dom);
-    setTableStyle(dom, stemsTableWidth);
+    try {
+        let xmlStr = await zip.file('word/document.xml').async('string');
+        let dom = new DOMParser().parseFromString(xmlStr, 'text/xml');
+        deleteTblW(dom);
+        addPPrCenter(dom);
+        setPage(dom);
+        setExtent(dom);
+        setTblStyleTblW(dom);
+        setUnderline(dom);
+        setTableStyle(dom, stemsTableWidth);
 
-    xmlStr = new XMLSerializer().serializeToString(dom);
+        xmlStr = new XMLSerializer().serializeToString(dom);
 
-    xmlStr = xmlStr.replace(/cuihovah_/g, '&#x');
-    xmlStr = xmlStr.replace(/_cuihovah/g, ';');
-    xmlStr = xmlStr.replace(/\s*title=""\s*/g, ' ');
-    //xmlStr = _handleTableInDoc(stemsTableWidth, xmlStr);
-    await zip.file('word/document.xml', xmlStr); // 写回到文件
+        xmlStr = xmlStr.replace(/cuihovah_/g, '&#x');
+        xmlStr = xmlStr.replace(/_cuihovah/g, ';');
+        xmlStr = xmlStr.replace(/\s*title=""\s*/g, ' ');
+        //xmlStr = _handleTableInDoc(stemsTableWidth, xmlStr);
+        await zip.file('word/document.xml', xmlStr); // 写回到文件
+    } catch (e) {
+        throw e;
+    }
 };
 
 /**
@@ -453,10 +463,72 @@ let setPage = function (dom) {
     }
 };
 
+/**
+ * 删除页眉
+ * @param zip
+ * @param deleteHeader
+ * @returns {Promise<void>}
+ */
+let deleteHeader = async function (zip, deleteHeader) {
+    if (deleteHeader) {
+        let deleteHeaderFile = async function (filename) {
+            let xmlstr = await zip.file('word/' + filename).async('string');
+            //debug('xmlstr: ', xmlstr)
+            let dom = new DOMParser().parseFromString(xmlstr, 'text/xml');
+            let pPr = dom.documentElement.firstChild.firstChild;
+            if (pPr) {
+                let next = pPr.nextSibling;
+                while (next) {
+                    pPr.parentNode.removeChild(next);
+                    next = pPr.nextSibling;
+                }
+            }
+            let newXmlStr = new XMLSerializer().serializeToString(dom);
+            //debug('newXmlStr:', newXmlStr)
+            await zip.file('word/' + filename, newXmlStr); // 写回到文件里 settings.xml
+        };
+        try {
+            await deleteHeaderFile('header1.xml');
+            await deleteHeaderFile('header2.xml');
+            await setMarginAlignCenter(zip);
+        } catch (e) {
+            throw e;
+        }
+    }
+};
+
+/**
+ * 设置边距居中
+ * @param zip
+ */
+let setMarginAlignCenter = async function (zip) {
+    try {
+        let xmlstr = await zip.file('word/document.xml').async('string');
+        //debug('xmlstr: ', xmlstr)
+        let dom = new DOMParser().parseFromString(xmlstr, 'text/xml');
+        let sectPr = dom.documentElement.getElementsByTagName('w:sectPr');
+        let pgMar = sectPr.item(0).getElementsByTagName('w:pgMar');
+        if (pgMar.length > 0) {
+            let pgmar = pgMar.item(0);
+            let left = pgmar.getAttribute('w:left');
+            let right = pgmar.getAttribute('w:right');
+            let middle = Math.floor((Number(left) + Number(right)) / 2);
+            pgmar.setAttribute('w:left', middle.toString());
+            pgmar.setAttribute('w:right', middle.toString());
+            let newXmlStr = new XMLSerializer().serializeToString(dom);
+            //debug('newXmlStr:', newXmlStr)
+            await zip.file('word/document.xml', newXmlStr); // 写回到文件里 settings.xml
+        }
+    } catch (e) {
+        throw e;
+    }
+};
+
 
 module.exports = {
     setTableBorder: setTableBorder,
     setEvenAndOddHeaders: setEvenAndOddHeaders,
+    deleteHeader: deleteHeader,
     saveDocument: saveDocument,
     postProcess: postProcess
 };

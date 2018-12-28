@@ -67,3 +67,14 @@ test/data/input 测试用到的html
 使用过程中遇到到问题，请提交上来。
 
 或者你自己也可以修改代码，修复bug，添加功能，大家一起完善功能。
+
+
+## 更改
+
+2018-12-28:
+
+1.更新模板B4_double.docx的页眉，改成组合，[解决bug出现黑块 ZSKYN-12](http://jira.iyunxiao.com/projects/ZSKYN/issues/ZSKYN-12?filter=allopenissues)
+
+2.配置是否添加页眉
+
+3.删除页眉，设置页面边距，内容居中
