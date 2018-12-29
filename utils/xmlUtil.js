@@ -2,7 +2,6 @@
 const debug = require('debug')('docx:utils:xmlUtil');
 const XMLSerializer = require('xmldom').XMLSerializer;
 const DOMParser = require('xmldom').DOMParser;
-const _ = require('underscore');
 const fs = require('fs');
 
 /**
