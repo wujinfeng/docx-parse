@@ -321,7 +321,31 @@ let setUnderline = function (dom) {
     }
 };
 
-let postProcess = async function (zip, stemsTableWidth = []) {
+let postProcess119 = async function (zip, stemsTableWidth = []) {
+    try {
+        let xmlStr = await zip.file('word/document.xml').async('string');
+        let dom = new DOMParser().parseFromString(xmlStr, 'text/xml');
+        deleteTblW(dom);
+        addPPrCenter(dom);
+        setPage(dom);
+        setExtent(dom);
+        setTblStyleTblW(dom);
+        setUnderline(dom);
+        setTableStyle(dom, stemsTableWidth);
+
+        xmlStr = new XMLSerializer().serializeToString(dom);
+
+        xmlStr = xmlStr.replace(/cuihovah_/g, '&#x');
+        xmlStr = xmlStr.replace(/_cuihovah/g, ';');
+        xmlStr = xmlStr.replace(/\s*title=""\s*/g, ' ');
+        //xmlStr = _handleTableInDoc(stemsTableWidth, xmlStr);
+        await zip.file('word/document.xml', xmlStr); // 写回到文件
+    } catch (e) {
+        throw e;
+    }
+};
+
+let postProcess27 = async function (zip, stemsTableWidth = []) {
     try {
         let xmlStr = await zip.file('word/document.xml').async('string');
         let dom = new DOMParser().parseFromString(xmlStr, 'text/xml');
@@ -529,5 +553,6 @@ module.exports = {
     setEvenAndOddHeaders: setEvenAndOddHeaders,
     deleteHeader: deleteHeader,
     saveDocument: saveDocument,
-    postProcess: postProcess
+    postProcess119: postProcess119,
+    postProcess27: postProcess27
 };

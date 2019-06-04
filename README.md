@@ -32,7 +32,7 @@ html2docx.parse(content);
 
 ```
 
-需要安装 pandoc 2.5版本.
+需要安装 pandoc 2.7版本.
 
 ## 测试
 
