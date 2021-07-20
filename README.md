@@ -10,7 +10,7 @@ The HTML 生成 word.docx
 
 
 ```
-npm install http://git.iyunxiao.com/wujinfeng/docx-parse.git
+npm install https://github.com/wujinfeng/docx-parse.git
 ```
 
 ## 使用方法
